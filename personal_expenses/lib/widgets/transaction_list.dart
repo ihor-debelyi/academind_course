@@ -4,19 +4,37 @@ import 'package:personal_expenses/widgets/transaction_card.dart';
 
 class TransactionList extends StatelessWidget {
   final List<Transaction> transactions;
-  const TransactionList(this.transactions, {Key? key}) : super(key: key);
+  final Function deleteTransaction;
+
+  const TransactionList(this.transactions,
+      {Key? key, required this.deleteTransaction})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    transactions.sort((a, b) => b.date.compareTo(a.date));
     return Container(
       height: 500,
-      margin: const EdgeInsets.only(top: 10),
-      child: ListView.builder(
-        itemBuilder: (ctx, idx) {
-          return TransactionCard(transaction: transactions[idx]);
-        },
-        itemCount: transactions.length,
-      ),
+      child: transactions.isEmpty
+          ? Column(
+              children: [
+                Text(
+                  'No transactions added yet!',
+                  style: Theme.of(context).textTheme.headline6,
+                ),
+                Container(
+                    margin: const EdgeInsets.only(top: 15),
+                    height: 200,
+                    child: Image.asset('assets/images/waiting.png',
+                        fit: BoxFit.cover)),
+              ],
+            )
+          : ListView.builder(
+              itemBuilder: (ctx, idx) => TransactionCard(
+                  transaction: transactions[idx],
+                  deleteTransaction: deleteTransaction),
+              itemCount: transactions.length,
+            ),
     );
   }
 }

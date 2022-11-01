@@ -1,5 +1,8 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:personal_expenses/models/transaction.dart';
+import 'package:personal_expenses/widgets/chart.dart';
 import 'package:personal_expenses/widgets/new_transaction.dart';
 import 'package:personal_expenses/widgets/transaction_list.dart';
 
@@ -27,6 +30,10 @@ class MyApp extends StatelessWidget {
                 fontWeight: FontWeight.bold,
                 fontSize: 18,
               ),
+              button: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
             ),
         appBarTheme: ThemeData.light().appBarTheme.copyWith(
               titleTextStyle: const TextStyle(
@@ -53,6 +60,36 @@ class _MyHomePageState extends State<MyHomePage> {
       id: 't1',
       title: 'New mouse',
       amount: 350,
+      date: DateTime.now().subtract(const Duration(days: 8)),
+    ),
+    Transaction(
+      id: 't2',
+      title: 'Weekly Groceries',
+      amount: 150,
+      date: DateTime.now(),
+    ),
+    Transaction(
+      id: 't2',
+      title: 'Weekly Groceries',
+      amount: 150,
+      date: DateTime.now(),
+    ),
+    Transaction(
+      id: 't2',
+      title: 'Weekly Groceries',
+      amount: 150,
+      date: DateTime.now(),
+    ),
+    Transaction(
+      id: 't2',
+      title: 'Weekly Groceries',
+      amount: 150,
+      date: DateTime.now(),
+    ),
+    Transaction(
+      id: 't2',
+      title: 'Weekly Groceries',
+      amount: 150,
       date: DateTime.now(),
     ),
     Transaction(
@@ -63,18 +100,30 @@ class _MyHomePageState extends State<MyHomePage> {
     ),
   ];
 
-  void _addNewTransaction(String txTitle, double txAmount) {
-    final lastId = _userTransactions.last.id;
+  List<Transaction> get _recentTransactions => _userTransactions
+      .where(
+          (tx) => DateTime.now().difference(tx.date) <= const Duration(days: 7))
+      .toList();
+
+  void _addNewTransaction(String txTitle, double txAmount, DateTime date) {
+    final lastId =
+        _userTransactions.isEmpty ? 't0' : _userTransactions.first.id;
     final newId = int.parse(lastId.substring(1)) + 1;
     final newTransaction = Transaction(
       id: 't$newId',
       title: txTitle,
       amount: txAmount,
-      date: DateTime.now(),
+      date: date,
     );
 
     setState(() {
       _userTransactions.add(newTransaction);
+    });
+  }
+
+  void _deleteTransaction(String id) {
+    setState(() {
+      _userTransactions.removeWhere((tx) => tx.id == id);
     });
   }
 
@@ -106,15 +155,9 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SizedBox(
-            height: 100,
-            child: Card(
-              color: Colors.amber,
-              elevation: 5,
-              child: Text('Chart'),
-            ),
-          ),
-          TransactionList(_userTransactions)
+          Chart(_recentTransactions),
+          TransactionList(_userTransactions,
+              deleteTransaction: _deleteTransaction),
         ],
       ),
     );
