@@ -13,10 +13,9 @@ class TransactionList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     transactions.sort((a, b) => b.date.compareTo(a.date));
-    return Container(
-      height: 500,
-      child: transactions.isEmpty
-          ? Column(
+    return transactions.isEmpty
+        ? LayoutBuilder(
+            builder: (ctx, constraints) => Column(
               children: [
                 Text(
                   'No transactions added yet!',
@@ -24,17 +23,17 @@ class TransactionList extends StatelessWidget {
                 ),
                 Container(
                     margin: const EdgeInsets.only(top: 15),
-                    height: 200,
+                    height: constraints.maxHeight * 0.6,
                     child: Image.asset('assets/images/waiting.png',
                         fit: BoxFit.cover)),
               ],
-            )
-          : ListView.builder(
-              itemBuilder: (ctx, idx) => TransactionCard(
-                  transaction: transactions[idx],
-                  deleteTransaction: deleteTransaction),
-              itemCount: transactions.length,
             ),
-    );
+          )
+        : ListView.builder(
+            itemBuilder: (ctx, idx) => TransactionCard(
+                transaction: transactions[idx],
+                deleteTransaction: deleteTransaction),
+            itemCount: transactions.length,
+          );
   }
 }

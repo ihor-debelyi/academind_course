@@ -15,45 +15,54 @@ class ChartBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          height: 20,
-          child: FittedBox(
-            child: Text('\$${chartTransaction.amount.toStringAsFixed(0)}'),
+    return LayoutBuilder(builder: (context, constraints) {
+      return Column(
+        children: [
+          Container(
+            height: constraints.maxHeight * 0.15,
+            child: FittedBox(
+              child: Text('\$${chartTransaction.amount.toStringAsFixed(0)}'),
+            ),
           ),
-        ),
-        const SizedBox(height: 5),
-        Container(
-          height: 60,
-          width: 10,
-          child: Stack(
-            alignment: Alignment.bottomCenter,
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  border: Border.all(
-                      color: Theme.of(context).primaryColor, width: 1.0),
-                  color: Theme.of(context).primaryColor,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              FractionallySizedBox(
-                heightFactor: spendingPercentage,
-                child: Container(
+          SizedBox(
+            height: constraints.maxHeight * 0.05,
+          ),
+          Container(
+            height: constraints.maxHeight * 0.6,
+            width: 10,
+            child: Stack(
+              alignment: Alignment.bottomCenter,
+              children: [
+                Container(
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.secondary,
+                    border: Border.all(
+                        color: Theme.of(context).primaryColor, width: 1.0),
+                    color: Theme.of(context).primaryColor,
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-              )
-            ],
+                FractionallySizedBox(
+                  heightFactor: spendingPercentage,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.secondary,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                )
+              ],
+            ),
           ),
-        ),
-        // Text((chartTransaction.amount / totalSpending).toStringAsFixed(2)),
-        const SizedBox(height: 5),
-        Text(chartTransaction.day),
-      ],
-    );
+          // Text((chartTransaction.amount / totalSpending).toStringAsFixed(2)),
+          SizedBox(height: constraints.maxHeight * 0.05),
+          Container(
+            height: constraints.maxHeight * 0.15,
+            child: FittedBox(
+              child: Text(chartTransaction.day),
+            ),
+          ),
+        ],
+      );
+    });
   }
 }

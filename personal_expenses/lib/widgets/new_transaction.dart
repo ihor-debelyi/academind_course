@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -52,50 +55,63 @@ class _NewTransactionState extends State<NewTransaction> {
   Widget build(BuildContext context) {
     return Card(
       elevation: 5,
-      child: Container(
-        margin: const EdgeInsets.all(10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            TextField(
-              decoration: const InputDecoration(labelText: 'Title'),
-              controller: _titleController,
-              onSubmitted: (_) => _submitData(),
-            ),
-            TextField(
-              decoration: const InputDecoration(labelText: 'Amount'),
-              keyboardType: TextInputType.number,
-              controller: _amountController,
-              onSubmitted: (_) => _submitData(),
-            ),
-            Container(
-              height: 70,
-              child: Row(
-                children: [
-                  Text(
-                    _pickedDate == null
-                        ? 'No Date Chosen!'
-                        : 'Picked Date: ${DateFormat('dd/MM/yyyy').format(_pickedDate!)}',
-                  ),
-                  TextButton(
-                    style: TextButton.styleFrom(
-                      foregroundColor: Theme.of(context).primaryColor,
+      child: SingleChildScrollView(
+        child: Container(
+          margin: EdgeInsets.only(
+            top: 10,
+            left: 10,
+            right: 10,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 10,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              TextField(
+                decoration: const InputDecoration(labelText: 'Title'),
+                controller: _titleController,
+                onSubmitted: (_) => _submitData(),
+              ),
+              TextField(
+                decoration: const InputDecoration(labelText: 'Amount'),
+                keyboardType: TextInputType.number,
+                controller: _amountController,
+                onSubmitted: (_) => _submitData(),
+              ),
+              Container(
+                height: 70,
+                child: Row(
+                  children: [
+                    Text(
+                      _pickedDate == null
+                          ? 'No Date Chosen!'
+                          : 'Picked Date: ${DateFormat('dd/MM/yyyy').format(_pickedDate!)}',
                     ),
-                    onPressed: _presentDatePicker,
-                    child: const Text('Choose Date'),
-                  )
-                ],
+                    TextButton(
+                      style: TextButton.styleFrom(
+                        foregroundColor: Theme.of(context).primaryColor,
+                      ),
+                      onPressed: _presentDatePicker,
+                      child: const Text('Choose Date'),
+                    )
+                  ],
+                ),
               ),
-            ),
-            ElevatedButton(
-              onPressed: _submitData,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).primaryColor,
-                foregroundColor: Theme.of(context).textTheme.button!.color,
-              ),
-              child: const Text('Add Transaction'),
-            ),
-          ],
+              Platform.isIOS
+                  ? CupertinoButton(
+                      onPressed: _submitData,
+                      child: const Text('Add Transaction'),
+                    )
+                  : ElevatedButton(
+                      onPressed: _submitData,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).primaryColor,
+                        foregroundColor:
+                            Theme.of(context).textTheme.button!.color,
+                      ),
+                      child: const Text('Add Transaction'),
+                    ),
+            ],
+          ),
         ),
       ),
     );
