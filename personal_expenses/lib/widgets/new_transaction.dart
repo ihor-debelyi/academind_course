@@ -77,7 +77,7 @@ class _NewTransactionState extends State<NewTransaction> {
                 controller: _amountController,
                 onSubmitted: (_) => _submitData(),
               ),
-              Container(
+              SizedBox(
                 height: 70,
                 child: Row(
                   children: [
@@ -88,8 +88,7 @@ class _NewTransactionState extends State<NewTransaction> {
                     ),
                     TextButton(
                       style: TextButton.styleFrom(
-                        foregroundColor: Theme.of(context).primaryColor,
-                      ),
+                          foregroundColor: Theme.of(context).primaryColor),
                       onPressed: _presentDatePicker,
                       child: const Text('Choose Date'),
                     )
@@ -104,10 +103,9 @@ class _NewTransactionState extends State<NewTransaction> {
                   : ElevatedButton(
                       onPressed: _submitData,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).primaryColor,
-                        foregroundColor:
-                            Theme.of(context).textTheme.button!.color,
-                      ),
+                          backgroundColor: Theme.of(context).primaryColor,
+                          foregroundColor:
+                              Theme.of(context).textTheme.button!.color),
                       child: const Text('Add Transaction'),
                     ),
             ],

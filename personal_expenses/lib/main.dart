@@ -121,11 +121,39 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final mediaQuery = MediaQuery.of(context);
-    final isLandscape = mediaQuery.orientation == Orientation.landscape;
-    final PreferredSizeWidget appBar = (Platform.isIOS
+  List<Widget> _buildPortraitContent(
+      MediaQueryData mediaQuery, AppBar appBar, Widget transactionListWidget) {
+    return [
+      SizedBox(
+        height: (mediaQuery.size.height -
+                appBar.preferredSize.height -
+                mediaQuery.padding.top) *
+            0.3,
+        child: Chart(_recentTransactions),
+      ),
+      transactionListWidget,
+    ];
+  }
+
+  Widget _buildLandscapeContent() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Text('Show chart'),
+        Switch.adaptive(
+            activeColor: Theme.of(context).colorScheme.secondary,
+            value: _showChart,
+            onChanged: (val) {
+              setState(() {
+                _showChart = val;
+              });
+            }),
+      ],
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar() {
+    final appBar = Platform.isIOS
         ? CupertinoNavigationBar(
             middle: const Text('Personal Expenses'),
             trailing: Row(
@@ -145,44 +173,40 @@ class _MyHomePageState extends State<MyHomePage> {
                 icon: const Icon(Icons.add),
               ),
             ],
-          )) as PreferredSizeWidget;
-    final transactionListWidget = Container(
-      height: (mediaQuery.size.height -
-              appBar.preferredSize.height -
-              mediaQuery.padding.top) *
-          0.75,
-      child: TransactionList(_userTransactions,
-          deleteTransaction: _deleteTransaction),
-    );
+          );
+    return appBar as PreferredSizeWidget;
+  }
+
+  Widget _buildTransactionList(
+    MediaQueryData mediaQuery,
+    AppBar appBar,
+  ) =>
+      SizedBox(
+        height: (mediaQuery.size.height -
+                appBar.preferredSize.height -
+                mediaQuery.padding.top) *
+            0.75,
+        child: TransactionList(_userTransactions,
+            deleteTransaction: _deleteTransaction),
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    final isLandscape = mediaQuery.orientation == Orientation.landscape;
+    final PreferredSizeWidget appBar = _buildAppBar();
     final pageBody = SafeArea(
       child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (isLandscape)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('Show chart'),
-                  Switch.adaptive(
-                      activeColor: Theme.of(context).colorScheme.secondary,
-                      value: _showChart,
-                      onChanged: (val) {
-                        setState(() {
-                          _showChart = val;
-                        });
-                      }),
-                ],
-              ),
+            if (isLandscape) _buildLandscapeContent(),
             if (!isLandscape)
-              SizedBox(
-                height: (mediaQuery.size.height -
-                        appBar.preferredSize.height -
-                        mediaQuery.padding.top) *
-                    0.3,
-                child: Chart(_recentTransactions),
+              ..._buildPortraitContent(
+                mediaQuery,
+                appBar as AppBar,
+                _buildTransactionList(mediaQuery, appBar),
               ),
-            if (!isLandscape) transactionListWidget,
             _showChart
                 ? SizedBox(
                     height: (mediaQuery.size.height -
@@ -190,7 +214,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             mediaQuery.padding.top) *
                         0.75,
                     child: Chart(_recentTransactions))
-                : transactionListWidget
+                : _buildTransactionList(mediaQuery, appBar as AppBar),
           ],
         ),
       ),
