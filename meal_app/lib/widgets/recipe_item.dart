@@ -1,4 +1,6 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
+
 import 'package:meal_app/screens/recipe_details_screen.dart';
 
 import '../models/enums/affordability_enum.dart';
@@ -11,15 +13,18 @@ class RecipeItem extends StatelessWidget {
   final int duration;
   final Complexity complexity;
   final Affordability affordability;
+  final Function? removeItem;
 
-  const RecipeItem(
-      {super.key,
-      required this.id,
-      required this.title,
-      required this.imageUrl,
-      required this.duration,
-      required this.complexity,
-      required this.affordability});
+  const RecipeItem({
+    Key? key,
+    required this.id,
+    required this.title,
+    required this.imageUrl,
+    required this.duration,
+    required this.complexity,
+    required this.affordability,
+    this.removeItem,
+  }) : super(key: key);
 
   String get complexityText {
     switch (complexity) {
@@ -49,7 +54,14 @@ class RecipeItem extends StatelessWidget {
 
   void selectMeal(BuildContext context) {
     Navigator.of(context)
-        .pushNamed(RecipeDetailsScreen.routeName, arguments: id);
+        .pushNamed(RecipeDetailsScreen.routeName, arguments: id)
+        .then(
+      (value) {
+        if (value != null && removeItem != null) {
+          removeItem!(value);
+        }
+      },
+    );
   }
 
   @override
@@ -74,6 +86,16 @@ class RecipeItem extends StatelessWidget {
                     height: 250,
                     width: double.infinity,
                     fit: BoxFit.cover,
+                    loadingBuilder: (context, child, loadingProgress) =>
+                        loadingProgress == null
+                            ? child
+                            : const SizedBox(
+                                height: 250,
+                                width: double.infinity,
+                                child: Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                              ),
                   ),
                 ),
                 Positioned(

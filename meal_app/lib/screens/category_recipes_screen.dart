@@ -1,27 +1,57 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
+
 import 'package:meal_app/dummy_data.dart';
 import 'package:meal_app/widgets/recipe_item.dart';
 
-class CategoryRecipesScreen extends StatelessWidget {
-  static const routeName = '/category-recipes';
-  // final String categoryId;
-  // final String categoryTitle;
+import '../models/recipe.dart';
 
-  // const CategoryRecipesScreen({
-  //   Key? key,
-  //   required this.categoryId,
-  //   required this.categoryTitle,
-  // }) : super(key: key);
+class CategoryRecipesScreen extends StatefulWidget {
+  static const routeName = '/category-recipes';
+
+  final List<Recipe> availableRecipes;
+  const CategoryRecipesScreen(
+    this.availableRecipes, {
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  State<CategoryRecipesScreen> createState() => _CategoryRecipesScreenState();
+}
+
+class _CategoryRecipesScreenState extends State<CategoryRecipesScreen> {
+  String categoryTitle = '';
+  List<Recipe> categoryRecipes = [];
+  bool _loadedInitData = false;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    if (!_loadedInitData) {
+      final routeArgs = ModalRoute.of(context)!.settings.arguments as Map;
+      categoryTitle = routeArgs['title'];
+      final categoryId = routeArgs['id'];
+      categoryRecipes = widget.availableRecipes
+          .where((recipe) => recipe.categoryIds.contains(categoryId))
+          .toList();
+      _loadedInitData = true;
+    }
+    super.didChangeDependencies();
+  }
+
+  void removeItem(String id) {
+    var recipeToRemove = dummyRecipes.firstWhere((element) => element.id == id);
+    setState(() {
+      categoryRecipes.remove(recipeToRemove);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    final routeArgs = ModalRoute.of(context)!.settings.arguments as Map;
-    final categoryTitle = routeArgs['title'];
-    final categoryId = routeArgs['id'];
-    final categoryRecipes = dummyRecipes
-        .where((recipe) => recipe.categoryIds.contains(categoryId))
-        .toList();
     return Scaffold(
       appBar: AppBar(
         title: Text(categoryTitle),
@@ -36,6 +66,7 @@ class CategoryRecipesScreen extends StatelessWidget {
             duration: recipe.duration,
             complexity: recipe.complexity,
             affordability: recipe.affordability,
+            removeItem: removeItem,
           );
         },
         itemCount: categoryRecipes.length,
