@@ -3,6 +3,7 @@ import 'package:e_shop/screens/product_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../providers/cart_provider.dart';
 import '../providers/product.dart';
 
 class ProductItem extends StatelessWidget {
@@ -31,11 +32,19 @@ class ProductItem extends StatelessWidget {
             product.title,
             style: const TextStyle(fontSize: 12),
           ),
-          trailing: IconButton(
+          trailing: Consumer<CartProvider>(
+            builder: (ctx, cartProvider, _) => IconButton(
               icon: const Icon(
                 Icons.shopping_cart,
               ),
-              onPressed: () {}),
+              onPressed: () => cartProvider.addItem(
+                product.id,
+                product.price,
+                product.title,
+                product.imageUrl,
+              ),
+            ),
+          ),
           backgroundColor: Colors.black54,
         ),
         child: InkWell(
