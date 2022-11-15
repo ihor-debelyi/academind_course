@@ -34,16 +34,33 @@ class ProductItem extends StatelessWidget {
           ),
           trailing: Consumer<CartProvider>(
             builder: (ctx, cartProvider, _) => IconButton(
-              icon: const Icon(
-                Icons.shopping_cart,
-              ),
-              onPressed: () => cartProvider.addItem(
-                product.id,
-                product.price,
-                product.title,
-                product.imageUrl,
-              ),
-            ),
+                icon: const Icon(
+                  Icons.shopping_cart,
+                ),
+                onPressed: () {
+                  cartProvider.addItem(
+                    product.id,
+                    product.price,
+                    product.title,
+                    product.imageUrl,
+                  );
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Added ${product.title} to cart!',
+                        textAlign: TextAlign.center,
+                      ),
+                      action: SnackBarAction(
+                        label: 'UNDO',
+                        onPressed: () {
+                          cartProvider.removeSingleItem(product.id);
+                        },
+                      ),
+                      duration: const Duration(seconds: 1),
+                    ),
+                  );
+                }),
           ),
           backgroundColor: Colors.black54,
         ),
