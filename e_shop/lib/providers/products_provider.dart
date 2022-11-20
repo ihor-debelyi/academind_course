@@ -19,7 +19,21 @@ class ProductsProvider with ChangeNotifier {
   }
 
   void addProduct(Product product) {
-    _items.add(product);
+    final productToAdd = product.copyWith(id: DateTime.now().toString());
+    _items.add(productToAdd);
+    notifyListeners();
+  }
+
+  void updateProduct(Product product) {
+    final index = _items.indexWhere((p) => p.id == product.id);
+    if (index >= 0) {
+      _items[index] = product;
+      notifyListeners();
+    }
+  }
+
+  void deleteProduct(String id) {
+    _items.removeWhere((p) => p.id == id);
     notifyListeners();
   }
 }
