@@ -26,27 +26,31 @@ class UserProductsScreen extends StatelessWidget {
         ],
       ),
       drawer: const MainDrawer(),
-      body: Padding(
-        padding: const EdgeInsets.all(8),
-        child: Consumer<ProductsProvider>(
-          builder: (context, products, _) {
-            return ListView.builder(
-              itemCount: products.items.length,
-              itemBuilder: ((_, index) {
-                var product = products.items[index];
-                return Column(
-                  children: [
-                    UserProductItem(
-                      id: product.id,
-                      title: product.title,
-                      imageUrl: product.imageUrl,
-                    ),
-                    const Divider()
-                  ],
-                );
-              }),
-            );
-          },
+      body: RefreshIndicator(
+        onRefresh: () => Provider.of<ProductsProvider>(context, listen: false)
+            .fetchProducts(),
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Consumer<ProductsProvider>(
+            builder: (context, products, _) {
+              return ListView.builder(
+                itemCount: products.items.length,
+                itemBuilder: ((_, index) {
+                  var product = products.items[index];
+                  return Column(
+                    children: [
+                      UserProductItem(
+                        id: product.id,
+                        title: product.title,
+                        imageUrl: product.imageUrl,
+                      ),
+                      const Divider()
+                    ],
+                  );
+                }),
+              );
+            },
+          ),
         ),
       ),
     );

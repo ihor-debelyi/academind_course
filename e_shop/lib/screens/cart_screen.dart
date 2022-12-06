@@ -16,6 +16,7 @@ class CartScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cart = Provider.of<CartProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Your Cart'),
@@ -45,20 +46,7 @@ class CartScreen extends StatelessWidget {
                     ),
                     backgroundColor: Theme.of(context).colorScheme.primary,
                   ),
-                  TextButton(
-                    onPressed: () {
-                      Provider.of<OrdersProvider>(context, listen: false)
-                          .addOrder(
-                        cart.items.values.toList(),
-                        cart.totalAmount,
-                      );
-                      cart.clear();
-                    },
-                    style: TextButton.styleFrom(
-                      foregroundColor: Theme.of(context).primaryColor,
-                    ),
-                    child: const Text('ORDER NOW'),
-                  ),
+                  OrderButton(cart: cart)
                 ],
               ),
             ),
@@ -82,6 +70,46 @@ class CartScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class OrderButton extends StatefulWidget {
+  final CartProvider cart;
+  OrderButton({Key? key, required this.cart}) : super(key: key);
+
+  @override
+  State<OrderButton> createState() => _OrderButtonState();
+}
+
+class _OrderButtonState extends State<OrderButton> {
+  bool _isLoading = false;
+
+  void _createOrder() {
+    setState(() => _isLoading = true);
+    final cart = Provider.of<CartProvider>(context, listen: false);
+    Provider.of<OrdersProvider>(context, listen: false)
+        .addOrder(
+      cart.items.values.toList(),
+      cart.totalAmount,
+    )
+        .whenComplete(() {
+      cart.clear();
+      setState(() => _isLoading = false);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      onPressed:
+          (widget.cart.items.isEmpty || _isLoading) ? null : _createOrder,
+      style: TextButton.styleFrom(
+        foregroundColor: Theme.of(context).primaryColor,
+      ),
+      child: _isLoading
+          ? const CircularProgressIndicator()
+          : const Text('ORDER NOW'),
     );
   }
 }

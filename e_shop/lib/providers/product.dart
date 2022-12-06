@@ -1,5 +1,9 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
+import 'package:http/http.dart' as http;
+import '../api_routes.dart' as api_routes;
 
 class Product with ChangeNotifier {
   final String id;
@@ -34,8 +38,41 @@ class Product with ChangeNotifier {
         isFavorite: isFavorite ?? this.isFavorite,
       );
 
-  void toggleFavoriteStatus() {
-    isFavorite = !isFavorite;
+  static Product fromMap(String key, Map<String, dynamic> map) => Product(
+        id: key,
+        title: map['title'],
+        description: map['description'],
+        price: map['price'].toDouble(),
+        imageUrl: map['imageUrl'],
+        isFavorite: map['isFavorite'],
+      );
+
+  Map<String, dynamic> toMap() => {
+        'title': title,
+        'description': description,
+        'price': price,
+        'imageUrl': imageUrl,
+        'isFavorite': isFavorite,
+      };
+
+  void _setFavouriteValue(bool newValue) {
+    isFavorite = newValue;
     notifyListeners();
+  }
+
+  Future<void> toggleFavoriteStatus() async {
+    final oldState = isFavorite;
+    _setFavouriteValue(!isFavorite);
+    final url = Uri.https(api_routes.baseUrl, api_routes.productsUpdate(id));
+    try {
+      final response =
+          await http.patch(url, body: json.encode({'isFavorite': !isFavorite}));
+      if (response.statusCode != 200) {
+        _setFavouriteValue(oldState);
+      }
+    } catch (e) {
+      _setFavouriteValue(oldState);
+      throw e;
+    }
   }
 }

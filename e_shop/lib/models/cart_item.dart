@@ -13,4 +13,24 @@ class CartItem {
     required this.price,
     required this.imageUrl,
   });
+
+  factory CartItem.fromMap(Map<String, dynamic> map) {
+    return CartItem(
+      id: map['id'],
+      title: map['title'],
+      quantity: map['quantity'],
+      price: map['price'] as double,
+      imageUrl: map['imageUrl'],
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'title': title,
+      'quantity': quantity,
+      'price': price,
+      'imageUrl': imageUrl,
+    };
+  }
 }
