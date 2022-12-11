@@ -5,18 +5,28 @@ import 'package:http/http.dart' as http;
 
 import '../models/cart_item.dart';
 import '../models/order.dart';
-import '../api_routes.dart' as api_routes;
+import '../api_routes.dart' as api;
 
 class OrdersProvider with ChangeNotifier {
+  final String authToken;
+  final String userId;
   List<Order> _orders = [];
+
+  OrdersProvider(this.authToken, this.userId, this._orders);
 
   List<Order> get orders => [..._orders];
 
   Future<void> fetchOrders() async {
-    final url = Uri.https(api_routes.baseUrl, api_routes.orders);
+    final url = Uri.https(api.baseUrl, api.orders(userId), {
+      'auth': authToken,
+    });
     try {
       final response = await http.get(url);
-      if (json.decode(response.body) == null) {
+      if (response.statusCode == 200 && json.decode(response.body) == null) {
+        _orders = [];
+        notifyListeners();
+        return;
+      } else if (json.decode(response.body) == null) {
         return;
       }
       final extractedData = json.decode(response.body) as Map<String, dynamic>;
@@ -27,7 +37,7 @@ class OrdersProvider with ChangeNotifier {
       _orders = fetchedOrders;
       notifyListeners();
     } catch (error) {
-      throw error;
+      rethrow;
     }
   }
 
@@ -39,7 +49,9 @@ class OrdersProvider with ChangeNotifier {
       dateTime: DateTime.now(),
     );
 
-    final url = Uri.https(api_routes.baseUrl, api_routes.orders);
+    final url = Uri.https(api.baseUrl, api.orders(userId), {
+      'auth': authToken,
+    });
     try {
       final response = await http.post(
         url,
@@ -52,7 +64,7 @@ class OrdersProvider with ChangeNotifier {
       notifyListeners();
     } catch (error) {
       print(error);
-      throw error;
+      rethrow;
     }
   }
 }

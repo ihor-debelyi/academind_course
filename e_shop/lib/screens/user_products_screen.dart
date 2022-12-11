@@ -12,6 +12,11 @@ class UserProductsScreen extends StatelessWidget {
 
   const UserProductsScreen({Key? key}) : super(key: key);
 
+  Future<void> _refreshProducts(BuildContext context) async {
+    await Provider.of<ProductsProvider>(context, listen: false)
+        .fetchProducts(true);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,32 +31,39 @@ class UserProductsScreen extends StatelessWidget {
         ],
       ),
       drawer: const MainDrawer(),
-      body: RefreshIndicator(
-        onRefresh: () => Provider.of<ProductsProvider>(context, listen: false)
-            .fetchProducts(),
-        child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Consumer<ProductsProvider>(
-            builder: (context, products, _) {
-              return ListView.builder(
-                itemCount: products.items.length,
-                itemBuilder: ((_, index) {
-                  var product = products.items[index];
-                  return Column(
-                    children: [
-                      UserProductItem(
-                        id: product.id,
-                        title: product.title,
-                        imageUrl: product.imageUrl,
+      body: FutureBuilder(
+        future: _refreshProducts(context),
+        builder: (ctx, snapshot) =>
+            snapshot.connectionState == ConnectionState.waiting
+                ? const Center(
+                    child: CircularProgressIndicator(),
+                  )
+                : RefreshIndicator(
+                    onRefresh: () => _refreshProducts(context),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: Consumer<ProductsProvider>(
+                        builder: (context, products, _) {
+                          return ListView.builder(
+                            itemCount: products.items.length,
+                            itemBuilder: ((_, index) {
+                              var product = products.items[index];
+                              return Column(
+                                children: [
+                                  UserProductItem(
+                                    id: product.id,
+                                    title: product.title,
+                                    imageUrl: product.imageUrl,
+                                  ),
+                                  const Divider()
+                                ],
+                              );
+                            }),
+                          );
+                        },
                       ),
-                      const Divider()
-                    ],
-                  );
-                }),
-              );
-            },
-          ),
-        ),
+                    ),
+                  ),
       ),
     );
   }

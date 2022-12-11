@@ -1,6 +1,8 @@
+import 'package:e_shop/providers/auth_provider.dart';
 import 'package:e_shop/providers/cart_provider.dart';
 import 'package:e_shop/providers/orders_provider.dart';
 import 'package:e_shop/providers/products_provider.dart';
+import 'package:e_shop/screens/auth_screen.dart';
 import 'package:e_shop/screens/cart_screen.dart';
 import 'package:e_shop/screens/edit_product_screen.dart';
 import 'package:e_shop/screens/orders_screen.dart';
@@ -10,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'screens/products_overview_screen.dart';
+import 'screens/splash_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -24,69 +27,65 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (_) => ProductsProvider(),
+          create: (_) => AuthProvider(),
+        ),
+        ChangeNotifierProxyProvider<AuthProvider, ProductsProvider>(
+          create: (ctx) => ProductsProvider('', '', []),
+          update: (ctx, auth, oldProducts) => ProductsProvider(auth.token ?? '',
+              auth.userId ?? '', oldProducts == null ? [] : oldProducts.items),
+        ),
+        ChangeNotifierProxyProvider<AuthProvider, OrdersProvider>(
+          create: (_) => OrdersProvider('', '', []),
+          update: (ctx, auth, oldOrders) => OrdersProvider(auth.token ?? '',
+              auth.userId ?? '', oldOrders == null ? [] : oldOrders.orders),
         ),
         ChangeNotifierProvider(
           create: (_) => CartProvider(),
         ),
-        ChangeNotifierProvider(
-          create: (_) => OrdersProvider(),
-        )
       ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'My Shop',
-        theme: ThemeData(
-          primarySwatch: Colors.purple,
-          colorScheme: ThemeData.light().colorScheme.copyWith(
-                primary: Colors.purple,
-                secondary: Colors.deepOrange,
-              ),
-          fontFamily: 'Lato',
-          textTheme: ThemeData.light().textTheme.copyWith(
-                headline6: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+      child: Consumer<AuthProvider>(builder: (context, auth, child) {
+        ifAuth(targerScreen) => auth.isAuth ? targerScreen : AuthScreen();
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'My Shop',
+          theme: ThemeData(
+            primarySwatch: Colors.purple,
+            colorScheme: ThemeData.light().colorScheme.copyWith(
+                  primary: Colors.purple,
+                  secondary: Colors.deepOrange,
                 ),
-              ),
-        ),
-        // home: const MyHomePage(title: 'Flutter Demo Home Page'),
-        routes: {
-          ProductsOverviewScreen.routeName: (context) =>
-              ProductsOverviewScreen(),
-          ProductDetailsScreen.routeName: (context) =>
-              const ProductDetailsScreen(),
-          CartScreen.routeName: (context) => CartScreen(),
-          OrdersScreen.routeName: (context) => const OrdersScreen(),
-          UserProductsScreen.routeName: (context) => const UserProductsScreen(),
-          EditProductScreen.routeName: (context) => EditProductScreen(),
-        },
-      ),
-    );
-  }
-}
-
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(title),
-      ),
-      body: const Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Text(
-          'You have pushed the button this many times:',
-        ),
-      ),
+            fontFamily: 'Lato',
+            textTheme: ThemeData.light().textTheme.copyWith(
+                  headline6: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+          ),
+          home: auth.isAuth
+              ? ProductsOverviewScreen()
+              : FutureBuilder(
+                  future: auth.tryAutoLogin(),
+                  builder: (context, authResultSnapshot) =>
+                      authResultSnapshot.connectionState ==
+                              ConnectionState.waiting
+                          ? const SplashScreen()
+                          : AuthScreen(),
+                ),
+          routes: {
+            ProductDetailsScreen.routeName: (context) =>
+                ifAuth(const ProductDetailsScreen()),
+            CartScreen.routeName: (context) => ifAuth(CartScreen()),
+            OrdersScreen.routeName: (context) => ifAuth(const OrdersScreen()),
+            UserProductsScreen.routeName: (context) =>
+                ifAuth(const UserProductsScreen()),
+            EditProductScreen.routeName: (context) =>
+                ifAuth(EditProductScreen()),
+            AuthScreen.routeName: (context) => ifAuth(AuthScreen()),
+          },
+        );
+      }),
     );
   }
 }
