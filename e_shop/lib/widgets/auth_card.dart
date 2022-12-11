@@ -1,0 +1,262 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../models/exceptions/http_exception.dart';
+import '../providers/auth_provider.dart';
+import '../screens/auth_screen.dart';
+
+class AuthCard extends StatefulWidget {
+  const AuthCard({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  _AuthCardState createState() => _AuthCardState();
+}
+
+class _AuthCardState extends State<AuthCard>
+    with SingleTickerProviderStateMixin {
+  final GlobalKey<FormState> _formKey = GlobalKey();
+  AuthMode _authMode = AuthMode.login;
+  final Map<String, String> _authData = {
+    'email': '',
+    'password': '',
+  };
+  var _isLoading = false;
+  final _passwordController = TextEditingController();
+  AnimationController? _controller;
+  Animation<Offset>? _slideAnimation;
+  Animation<double>? _opacityAnimation;
+
+  @override
+  void initState() {
+    _controller = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 300));
+    _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0)
+        .animate(CurvedAnimation(parent: _controller!, curve: Curves.easeIn));
+    _slideAnimation = Tween<Offset>(
+            begin: const Offset(0, -1), end: Offset.zero)
+        .animate(CurvedAnimation(parent: _controller!, curve: Curves.easeIn));
+    // _heightAnimation = Tween<Size>(
+    //         begin: const Size(double.infinity, 260),
+    //         end: const Size(double.infinity, 320))
+    //     .animate(CurvedAnimation(parent: _controller!, curve: Curves.linear));
+    // _heightAnimation!.addListener(() => setState(() {}));
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    _controller!.dispose();
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('An Error Occurred!',
+            style: TextStyle(color: Theme.of(ctx).errorColor)),
+        content: Text(message),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('Okay'),
+            onPressed: () {
+              Navigator.of(ctx).pop();
+            },
+          )
+        ],
+      ),
+    );
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) {
+      // Invalid!
+      return;
+    }
+    _formKey.currentState!.save();
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      if (_authMode == AuthMode.login) {
+        // Log user in
+        await Provider.of<AuthProvider>(context, listen: false).login(
+          _authData['email']!,
+          _authData['password']!,
+        );
+      } else {
+        // Sign user up
+        await Provider.of<AuthProvider>(context, listen: false).signUp(
+          _authData['email']!,
+          _authData['password']!,
+        );
+      }
+    } on HttpException catch (error) {
+      var errorMessage = 'Authentication failed';
+      if (error.message.contains('EMAIL_EXISTS')) {
+        errorMessage = 'This email address is already in use.';
+      } else if (error.message.contains('INVALID_EMAIL')) {
+        errorMessage = 'This is not a valid email address.';
+      } else if (error.message.contains('WEAK_PASSWORD')) {
+        errorMessage = 'This password is too weak.';
+      } else if (error.message.contains('EMAIL_NOT_FOUND')) {
+        errorMessage = 'Could not find a user with that email.';
+      } else if (error.message.contains('INVALID_PASSWORD')) {
+        errorMessage = 'Invalid password.';
+      }
+      _showErrorDialog(errorMessage);
+    } catch (error) {
+      var errorMessage = 'Authentication failed. Please try again later.';
+      _showErrorDialog(errorMessage);
+    }
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
+  void _switchAuthMode() {
+    if (_authMode == AuthMode.login) {
+      setState(() {
+        _authMode = AuthMode.signup;
+      });
+      _controller!.forward();
+    } else {
+      setState(() {
+        _authMode = AuthMode.login;
+      });
+      _controller!.reverse();
+    }
+  }
+
+  Widget _buildConfirmPassword() {
+    return TextFormField(
+      enabled: _authMode == AuthMode.signup,
+      decoration: const InputDecoration(labelText: 'Confirm Password'),
+      obscureText: true,
+      validator: _authMode == AuthMode.signup
+          ? (value) {
+              if (value != _passwordController.text) {
+                return 'Passwords do not match!';
+              }
+              return null;
+            }
+          : null,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final deviceSize = MediaQuery.of(context).size;
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10.0),
+      ),
+      elevation: 8.0,
+      child:
+          // AnimatedBuilder(
+          //   animation: _heightAnimation!,
+          //   builder: ((context, ch) =>
+
+          AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        height: _authMode == AuthMode.signup ? 320 : 260,
+        // height: _heightAnimation!.value.height,
+        constraints:
+            BoxConstraints(minHeight: _authMode == AuthMode.signup ? 320 : 260),
+        width: deviceSize.width * 0.75,
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              children: <Widget>[
+                TextFormField(
+                  decoration: const InputDecoration(labelText: 'E-Mail'),
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (value) {
+                    if (value!.isEmpty || !value.contains('@')) {
+                      return 'Invalid email!';
+                    }
+                    return null;
+                  },
+                  onSaved: (value) {
+                    _authData['email'] = value!;
+                  },
+                ),
+                TextFormField(
+                  decoration: const InputDecoration(labelText: 'Password'),
+                  obscureText: true,
+                  controller: _passwordController,
+                  validator: (value) {
+                    if (value!.isEmpty || value.length < 5) {
+                      return 'Password is too short!';
+                    }
+                    return null;
+                  },
+                  onSaved: (value) {
+                    _authData['password'] = value!;
+                  },
+                ),
+                AnimatedContainer(
+                  constraints: BoxConstraints(
+                      minHeight: _authMode == AuthMode.signup ? 60 : 0,
+                      maxHeight: _authMode == AuthMode.signup ? 120 : 0),
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeIn,
+                  child: FadeTransition(
+                      opacity: _opacityAnimation!,
+                      child: SlideTransition(
+                          position: _slideAnimation!,
+                          child: _buildConfirmPassword())),
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                if (_isLoading)
+                  const CircularProgressIndicator()
+                else
+                  ElevatedButton(
+                    onPressed: _submit,
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 30.0, vertical: 8.0),
+                      backgroundColor: Theme.of(context).primaryColor,
+                      textStyle: TextStyle(
+                          color:
+                              Theme.of(context).primaryTextTheme.button!.color),
+                    ),
+                    child:
+                        Text(_authMode == AuthMode.login ? 'LOGIN' : 'SIGN UP'),
+                  ),
+                const SizedBox(
+                  height: 10,
+                ),
+                TextButton(
+                  onPressed: _switchAuthMode,
+                  style: TextButton.styleFrom(
+                    textStyle: TextStyle(
+                      color: Theme.of(context).primaryColor,
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 30.0, vertical: 4),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    // backgroundColor: Theme.of(context).primaryColor,
+                  ),
+                  child: Text(
+                    '${_authMode == AuthMode.login ? 'SIGNUP' : 'LOGIN'} INSTEAD',
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

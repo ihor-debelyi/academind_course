@@ -1,3 +1,4 @@
+import 'package:e_shop/helpers/custom_route.dart';
 import 'package:e_shop/providers/auth_provider.dart';
 import 'package:e_shop/providers/cart_provider.dart';
 import 'package:e_shop/providers/orders_provider.dart';
@@ -62,6 +63,11 @@ class MyApp extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+            pageTransitionsTheme: PageTransitionsTheme(builders: {
+              TargetPlatform.android: CustomPageTransitionBuilder(),
+              TargetPlatform.iOS: CustomPageTransitionBuilder(),
+              TargetPlatform.windows: CustomPageTransitionBuilder(),
+            }),
           ),
           home: auth.isAuth
               ? ProductsOverviewScreen()

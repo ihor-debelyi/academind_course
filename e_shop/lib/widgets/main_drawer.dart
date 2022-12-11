@@ -1,3 +1,4 @@
+import 'package:e_shop/helpers/custom_route.dart';
 import 'package:e_shop/providers/auth_provider.dart';
 import 'package:e_shop/screens/orders_screen.dart';
 import 'package:e_shop/screens/products_overview_screen.dart';
@@ -31,8 +32,10 @@ class MainDrawer extends StatelessWidget {
             leading: const Icon(Icons.payment),
             title: const Text('Orders'),
             onTap: () {
-              Navigator.of(context)
-                  .pushReplacementNamed(OrdersScreen.routeName);
+              // Navigator.of(context)
+              //     .pushReplacementNamed(OrdersScreen.routeName);
+              Navigator.of(context).pushReplacement(
+                  CustomRoute(builder: (ctx) => const OrdersScreen()));
             },
           ),
           const Divider(),

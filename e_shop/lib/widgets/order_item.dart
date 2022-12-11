@@ -23,64 +23,78 @@ class _OrderItemState extends State<OrderItem> {
   var _expanded = false;
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.all(10),
-      child: Column(children: [
-        ListTile(
-          title: Text(currencyFormat.format(widget.order.amount)),
-          subtitle: Text(
-            DateFormat('dd.MM.yyyy hh:mm').format(widget.order.dateTime),
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      height:
+          _expanded ? min(widget.order.products.length * 30.0 + 110, 250) : 95,
+      child: Card(
+        margin: const EdgeInsets.all(10),
+        child: Column(children: [
+          ListTile(
+            title: Text(currencyFormat.format(widget.order.amount)),
+            subtitle: Text(
+              DateFormat('dd.MM.yyyy hh:mm').format(widget.order.dateTime),
+            ),
+            trailing: IconButton(
+              icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more),
+              onPressed: () {
+                setState(() {
+                  _expanded = !_expanded;
+                });
+              },
+            ),
           ),
-          trailing: IconButton(
-            icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more),
-            onPressed: () {
-              setState(() {
-                _expanded = !_expanded;
-              });
-            },
-          ),
-        ),
-        if (_expanded)
-          Column(
-            children: [
-              const Divider(
-                color: Colors.grey,
-                height: 1,
-              ),
-              Container(
-                height: min(widget.order.products.length * 30.0 + 15, 100),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 15, vertical: 4),
-                child: ListView.builder(
-                  itemCount: widget.order.products.length,
-                  itemBuilder: (context, index) {
-                    var product = widget.order.products[index];
-                    return SizedBox(
-                      height: 30,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            product.title,
-                            style: const TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
-                          Text(
-                            '${product.quantity}x ${currencyFormat.format(product.price)}',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
+          // if (_expanded)
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            height: _expanded
+                ? min(widget.order.products.length * 30.0 + 25, 100)
+                : 0,
+            child: Column(
+              children: [
+                const Divider(
+                  color: Colors.grey,
+                  height: 1,
                 ),
-              ),
-            ],
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  height: _expanded
+                      ? min(widget.order.products.length * 30.0 + 5, 100)
+                      : 0,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 15, vertical: 4),
+                  child: ListView.builder(
+                    itemCount: widget.order.products.length,
+                    itemBuilder: (context, index) {
+                      var product = widget.order.products[index];
+                      return SizedBox(
+                        height: 30,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              product.title,
+                              style: const TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              '${product.quantity}x ${currencyFormat.format(product.price)}',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
-      ]),
+        ]),
+      ),
     );
   }
 }
