@@ -19,7 +19,7 @@ class CartItem {
       id: map['id'],
       title: map['title'],
       quantity: map['quantity'],
-      price: map['price'] as double,
+      price: map['price'].toDouble(),
       imageUrl: map['imageUrl'],
     );
   }

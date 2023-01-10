@@ -30,6 +30,7 @@ class OrdersProvider with ChangeNotifier {
         return;
       }
       final extractedData = json.decode(response.body) as Map<String, dynamic>;
+      print(extractedData);
       final List<Order> fetchedOrders = [];
       extractedData.forEach((id, orderData) {
         fetchedOrders.add(Order.fromJson(id, orderData));
