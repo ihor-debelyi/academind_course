@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "853133943858",
+    "project_id": "talkio-7dc01",
+    "storage_bucket": "talkio-7dc01.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:853133943858:android:594cf034fa02ec4d1a082b",
+        "android_client_info": {
+          "package_name": "com.example.i_chat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "853133943858-h41lj90dlpgs8kiul0910riduongi3tt.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDKMWpev-gbTSTkItFdbWH-RQcE4iuPRiU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "853133943858-h41lj90dlpgs8kiul0910riduongi3tt.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
